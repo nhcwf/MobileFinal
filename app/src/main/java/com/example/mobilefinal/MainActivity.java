@@ -49,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
     Bitmap bitmap;
     TextView username;
 
-    @SuppressLint({"DefaultLocale", "SetTextI18n"})
+    @SuppressLint("DefaultLocale")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -193,11 +193,11 @@ public class MainActivity extends AppCompatActivity {
         public boolean onDrag(View v, DragEvent event) {
             switch (event.getAction()) {
                 case DragEvent.ACTION_DRAG_ENTERED:
-//                    v.setBackgroundResource(R.drawable.rounded_corner_light_green);
+                    v.setBackgroundResource(R.drawable.rounded_corner_light_green);
                     break;
                 case DragEvent.ACTION_DRAG_EXITED:
                 case DragEvent.ACTION_DRAG_ENDED:
-//                    v.setBackgroundColor(Color.TRANSPARENT);
+                    v.setBackgroundColor(Color.TRANSPARENT);
                     break;
                 case DragEvent.ACTION_DROP:
                     importedImage.setImageBitmap(null);
