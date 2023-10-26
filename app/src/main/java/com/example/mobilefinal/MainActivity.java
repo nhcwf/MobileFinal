@@ -62,7 +62,7 @@ public class MainActivity extends AppCompatActivity {
     TextView username, score;
     String usernameString;
 
-    @SuppressLint({"DefaultLocale", "MissingInflatedId"})
+    @SuppressLint({"DefaultLocale", "MissingInflatedId", "SetTextI18n"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -72,6 +72,7 @@ public class MainActivity extends AppCompatActivity {
         scoreCount = database.getScoresCount();
 
         score = (TextView) findViewById(R.id.tv_score);
+        score.setText("Score: 0");
 
         username = (TextView) findViewById(R.id.tv_username);
         usernameString = getUsernameString();

@@ -9,6 +9,11 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 import androidx.annotation.Nullable;
 
+import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     public static final String DATABASE_NAME = "MobileFinal.db";
@@ -34,19 +39,42 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
+    private static byte[] getSHA(String input) throws NoSuchAlgorithmException {
+        MessageDigest md = MessageDigest.getInstance("SHA-256");
+
+        return md.digest(input.getBytes(StandardCharsets.UTF_8));
+    }
+
+    private static String toHexString(byte[] hash) {
+        // Convert byte array into signum representation
+        BigInteger number = new BigInteger(1, hash);
+
+        // Convert digested message to hex value
+        StringBuilder hexString = new StringBuilder(number.toString(16));
+
+        // Pad with leading zeros
+        while (hexString.length() < 64) { hexString.insert(0, '0'); }
+
+        return hexString.toString();
+    }
+
     public boolean insertUser(String username, String password) {
         SQLiteDatabase database = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
 
         contentValues.put("username", username);
-        contentValues.put("password", password);
+        try {
+            contentValues.put("password", toHexString(getSHA(password)));
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
 
         long result = database.insert(USERS_TABLE_NAME, null, contentValues);
 
         return result != -1;
     }
 
-    public boolean isValidUsername(String username) {
+    public boolean usernameNotFound(String username) {
         SQLiteDatabase database = this.getReadableDatabase();
         Cursor cursor = database.rawQuery("SELECT * FROM " + USERS_TABLE_NAME + " WHERE USERNAME = ?", new String[] { username });
 
@@ -55,7 +83,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public boolean isValidLogin(String username, String password) {
         SQLiteDatabase database = this.getReadableDatabase();
-        Cursor cursor = database.rawQuery("SELECT * FROM " + USERS_TABLE_NAME + " WHERE USERNAME = ? AND PASSWORD = ?", new String[] { username, password });
+        String hashPassword = "";
+
+        try {
+            hashPassword = toHexString(getSHA(password));
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
+
+        Cursor cursor = database.rawQuery("SELECT * FROM " + USERS_TABLE_NAME + " WHERE USERNAME = ? AND PASSWORD = ?", new String[] { username, hashPassword });
 
         return cursor.getCount() != 0;
     }

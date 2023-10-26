@@ -40,7 +40,7 @@ public class RegisterActivity extends AppCompatActivity {
         password = (EditText) findViewById(R.id.et_register_password);
         confirmPassword = (EditText) findViewById(R.id.et_register_confirm_password);
         passwordVisibility = (ImageView) findViewById(R.id.iv_register_password_visibility);
-        confirmPasswordVisibility = (ImageView) findViewById(R.id.iv_iv_register_confirm_password_visibility);
+        confirmPasswordVisibility = (ImageView) findViewById(R.id.iv_register_confirm_password_visibility);
         registerButton = (Button) findViewById(R.id.btn_register);
         returnButton = (Button) findViewById(R.id.btn_return);
 
@@ -83,7 +83,7 @@ public class RegisterActivity extends AppCompatActivity {
                 return;
             }
 
-            if (!database.isValidUsername(usernameString)) {
+            if (!database.usernameNotFound(usernameString)) {
                 Toast.makeText(RegisterActivity.this, "Username already exists.", Toast.LENGTH_SHORT).show();
                 return;
             }
@@ -108,6 +108,7 @@ public class RegisterActivity extends AppCompatActivity {
                 passwordVisibility.setImageResource(R.drawable.ic_show_password);
                 confirmPasswordVisibility.setImageResource(R.drawable.ic_show_password);
                 password.setTransformationMethod(PasswordTransformationMethod.getInstance());
+                confirmPassword.setTransformationMethod(PasswordTransformationMethod.getInstance());
                 return;
             }
 
@@ -115,6 +116,7 @@ public class RegisterActivity extends AppCompatActivity {
             passwordVisibility.setImageResource(R.drawable.ic_hint_password);
             confirmPasswordVisibility.setImageResource(R.drawable.ic_hint_password);
             password.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
+            confirmPassword.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
         }
     };
 }

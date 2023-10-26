@@ -12,6 +12,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -103,11 +104,5 @@ public class LoginActivity extends AppCompatActivity {
         }
     };
 
-
-    View.OnClickListener signinOnClickListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            startActivity(new Intent(LoginActivity.this, RegisterActivity.class));
-        }
-    };
+    View.OnClickListener signinOnClickListener = v -> startActivity(new Intent(LoginActivity.this, RegisterActivity.class));
 }

@@ -11,7 +11,7 @@
         android:id="@+id/ll_edit_texts"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="150dp"
+        android:layout_marginTop="130dp"
         android:baselineAligned="false"
         android:layout_marginHorizontal="32dp"
         android:orientation="vertical"
