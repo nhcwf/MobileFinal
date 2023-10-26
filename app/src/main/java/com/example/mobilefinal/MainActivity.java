@@ -94,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
             is_add_image_button_first_click = false;
             stop.setVisibility(View.VISIBLE);
             stop.setOnClickListener(stopOnClickListener);
-            Toast.makeText(MainActivity.this, "Game starts!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(MainActivity.this, "Game started!", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -212,8 +212,8 @@ public class MainActivity extends AppCompatActivity {
         public boolean onDrag(View v, DragEvent event) {
             if (event.getAction() == DragEvent.ACTION_DROP) {
                 importedImage.setVisibility(View.VISIBLE);
-                importedImage.setX(event.getX() - importedImage.getHeight() / 2);
-                importedImage.setY(event.getY() - importedImage.getHeight() / 2);
+                importedImage.setX(event.getX() - (float) importedImage.getHeight() / 2);
+                importedImage.setY(event.getY() - (float) importedImage.getHeight() / 2);
             }
             return true;
         }
