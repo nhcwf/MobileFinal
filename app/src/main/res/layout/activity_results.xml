@@ -56,14 +56,14 @@
             android:text="@string/title_logout" />
 
         <Button
-            android:id="@+id/btn_result_back"
+            android:id="@+id/btn_play_again"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="6dp"
             android:backgroundTint="@color/orange"
             android:textColor="@color/light_yellow"
             android:layout_weight="1"
-            android:text="@string/title_return" />
+            android:text="@string/title_play_again" />
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

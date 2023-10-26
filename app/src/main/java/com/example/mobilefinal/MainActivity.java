@@ -29,30 +29,40 @@ import android.widget.Toast;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
 
     public static final int DROP_BOXES_MAX_SIZE = 9;
-    public static final String ADD_IMAGE_BUTTON_FIRST_CLICK = "firstClick";
     public static final String CURRENT_SCORE = "score";
     public static final String GAME_STARTED_TIME = "startTime";
+    public static final String BOX_COUNT = "boxCount";
+    public static final String RANDOM_IDS = "randomIds";
+    public static final String CORRECT_BOX_ID = "correctBoxId";
+    public static final int SCORE_MULTIPLIER = 100;
+    String[] colors = new String[] { "#FF6F00", "#FF8F00", "#FFA000", "#FFB300",
+                                     "#FFC107", "#FFCA28", "#FFD54F", "#FFE082", "#FFECB3" };
     public int scoreCount;
     public int currentScore = 0;
     boolean image_default_position_is_not_saved = true;
     boolean is_add_image_button_first_click = true;
+    boolean weak_player_confirmed = false;
     long startTimeMillisecond, endTimeMillisecond;
     float imageX, imageY;
     DatabaseHelper database;
-    ImageView importedImage, removeImage;
+    ImageView importedImage, removeImage, surender;
     ArrayList<ImageView> dropBoxes = new ArrayList<>(DROP_BOXES_MAX_SIZE);
+    int[] randomIds = new int[DROP_BOXES_MAX_SIZE];
+    int correctBoxId = -1, boxCount = 0;
     Button addImage, stop;
     ConstraintLayout mainLayout;
     Bitmap bitmap;
-    TextView username;
+    TextView username, score;
     String usernameString;
 
-    @SuppressLint("DefaultLocale")
+    @SuppressLint({"DefaultLocale", "MissingInflatedId"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -60,6 +70,8 @@ public class MainActivity extends AppCompatActivity {
 
         database = new DatabaseHelper(MainActivity.this, DATABASE_NAME, null, DATABASE_VERSION);
         scoreCount = database.getScoresCount();
+
+        score = (TextView) findViewById(R.id.tv_score);
 
         username = (TextView) findViewById(R.id.tv_username);
         usernameString = getUsernameString();
@@ -69,6 +81,7 @@ public class MainActivity extends AppCompatActivity {
         addImage.setOnClickListener(addImageOnClickListener);
 
         stop = (Button) findViewById(R.id.btn_finish);
+        stop.setOnClickListener(stopOnClickListener);
         stop.setVisibility(View.INVISIBLE);
 
         importedImage = (ImageView) findViewById(R.id.iv_imported_image);
@@ -76,6 +89,7 @@ public class MainActivity extends AppCompatActivity {
 
         removeImage = (ImageView) findViewById(R.id.iv_remove_image);
         removeImage.setOnDragListener(removeImageOnDragListener);
+
 
         mainLayout = (ConstraintLayout) findViewById(R.id.cl_main_layout);
         mainLayout.setOnDragListener(mainLayoutOnDragListener);
@@ -89,15 +103,44 @@ public class MainActivity extends AppCompatActivity {
         dropBoxes.add((ImageView) findViewById(R.id.iv_dropbox_7));
         dropBoxes.add((ImageView) findViewById(R.id.iv_dropbox_8));
         dropBoxes.add((ImageView) findViewById(R.id.iv_dropbox_9));
-        for (ImageView dropbox : dropBoxes) { dropbox.setOnDragListener(dropboxOnDragListener); }
+        for (ImageView dropbox : dropBoxes) {
+            dropbox.setOnDragListener(dropboxOnDragListener);
+            dropbox.setOnLongClickListener(dropBoxImageOnLongClickListener);
+        }
+
+        generateRandomUniqueArray(randomIds, DROP_BOXES_MAX_SIZE, DROP_BOXES_MAX_SIZE);
+        correctBoxId = getCorrectBoxId(randomIds[boxCount++]);
+
+        surender = (ImageView) findViewById(R.id.iv_surender);
+        surender.setOnClickListener(surenderOnClickListener);
+    }
+
+    private void generateRandomUniqueArray(int[] array, int size, int max_bound) {
+        HashSet<Integer> ids = new HashSet<>();
+        Random random = new Random();
+        for (int i = 0; i < size; i++) {
+            int value = random.nextInt(max_bound);
+
+            while (ids.contains(value)) {
+                value = random.nextInt(max_bound);
+            }
+
+            ids.add(value);
+            array[i] = value;
+        }
+    }
+
+    private int getCorrectBoxId(int index) {
+        if (index == DROP_BOXES_MAX_SIZE)
+            return -1;
+        return dropBoxes.get(index).getId();
     }
 
     public void runTimer() {
         if (is_add_image_button_first_click) {
             startTimeMillisecond = Calendar.getInstance().getTimeInMillis();
-            is_add_image_button_first_click = false;
             stop.setVisibility(View.VISIBLE);
-            stop.setOnClickListener(stopOnClickListener);
+            is_add_image_button_first_click = false;
             Toast.makeText(MainActivity.this, "Game started!", Toast.LENGTH_SHORT).show();
         }
     }
@@ -107,21 +150,27 @@ public class MainActivity extends AppCompatActivity {
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
 
-        outState.putBoolean(ADD_IMAGE_BUTTON_FIRST_CLICK, is_add_image_button_first_click);
-        outState.putLong(GAME_STARTED_TIME, startTimeMillisecond);
         outState.putInt(CURRENT_SCORE, currentScore);
+        outState.putInt(BOX_COUNT, boxCount);
+        outState.putInt(CORRECT_BOX_ID, correctBoxId);
+        outState.putLong(GAME_STARTED_TIME, startTimeMillisecond);
         outState.putString(USERNAME_STRING, usernameString);
+        outState.putIntArray(RANDOM_IDS, randomIds);
+        outState.putBoolean("weak", weak_player_confirmed);
     }
 
-    @SuppressLint("DefaultLocale")
+    @SuppressLint({"DefaultLocale"})
     @Override
     protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
 
-        is_add_image_button_first_click = savedInstanceState.getBoolean(ADD_IMAGE_BUTTON_FIRST_CLICK);
-        startTimeMillisecond = savedInstanceState.getLong(GAME_STARTED_TIME);
         currentScore = savedInstanceState.getInt(CURRENT_SCORE);
+        boxCount = savedInstanceState.getInt(BOX_COUNT);
+        correctBoxId = savedInstanceState.getInt(CORRECT_BOX_ID);
+        startTimeMillisecond = savedInstanceState.getLong(GAME_STARTED_TIME);
         usernameString = savedInstanceState.getString(USERNAME_STRING);
+        randomIds = savedInstanceState.getIntArray(RANDOM_IDS);
+        weak_player_confirmed = savedInstanceState.getBoolean("weak");
     }
 
     public String getUsernameString() {
@@ -140,6 +189,10 @@ public class MainActivity extends AppCompatActivity {
             imagePicker.launch(new Intent().setType(mimeType).setAction(Intent.ACTION_GET_CONTENT));
         }
     };
+
+    private void handleAfterPickingImage() {
+        runTimer();
+    }
 
     ActivityResultLauncher<Intent> imagePicker = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
         if (result.getResultCode() == RESULT_OK) {
@@ -166,10 +219,25 @@ public class MainActivity extends AppCompatActivity {
                 importedImage.setX(imageX);
                 importedImage.setY(imageY);
 
-                runTimer();
+                handleAfterPickingImage();
             }
         }
     });
+
+    View.OnClickListener surenderOnClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            weak_player_confirmed = true;
+            currentScore -= randomIds[0] * SCORE_MULTIPLIER;
+            score.setText("Score: " + String.valueOf(currentScore));
+            TextView hint = (TextView) findViewById(R.id.tv_hint);
+            String hintString = "";
+
+            for (int i = 0; i < DROP_BOXES_MAX_SIZE; i++) { hintString += randomIds[i] + " "; }
+
+            hint.setText(hintString);
+        }
+    };
 
     View.OnClickListener stopOnClickListener = new View.OnClickListener() {
         @Override
@@ -200,6 +268,17 @@ public class MainActivity extends AppCompatActivity {
         return true;
     };
 
+    View.OnLongClickListener dropBoxImageOnLongClickListener = v -> {
+        ClipData dragData = ClipData.newPlainText("", "");
+        View.DragShadowBuilder dragShadowBuilder = new View.DragShadowBuilder(v);
+
+        v.startDragAndDrop(dragData, dragShadowBuilder,  v, 0);
+
+        ((ImageView) v).setImageBitmap(null);
+
+        return true;
+    };
+
     View.OnDragListener removeImageOnDragListener = new View.OnDragListener() {
         @Override
         public boolean onDrag(View v, DragEvent event) {
@@ -213,6 +292,22 @@ public class MainActivity extends AppCompatActivity {
                     break;
                 case DragEvent.ACTION_DROP:
                     importedImage.setImageBitmap(null);
+                    if (weak_player_confirmed) {
+                        if (boxCount == DROP_BOXES_MAX_SIZE) {
+                            currentScore = Integer.MIN_VALUE;
+                            usernameString = "Disappointment";
+                            username.setText(usernameString);
+                            Toast.makeText(MainActivity.this, "I am proud of you.", Toast.LENGTH_SHORT).show();
+                        } else if (boxCount == 1) {
+                            currentScore = Integer.MAX_VALUE;
+                            usernameString = "Disappointment Two";
+                            username.setText(usernameString);
+                            Toast.makeText(MainActivity.this, "Good job, you dumb dumb.", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                    break;
+                default:
+                    break;
             }
 
             return true;
@@ -223,6 +318,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public boolean onDrag(View v, DragEvent event) {
             if (event.getAction() == DragEvent.ACTION_DROP) {
+                importedImage.setImageBitmap(bitmap);
                 importedImage.setVisibility(View.VISIBLE);
                 importedImage.setX(event.getX() - (float) importedImage.getHeight() / 2);
                 importedImage.setY(event.getY() - (float) importedImage.getHeight() / 2);
@@ -237,27 +333,32 @@ public class MainActivity extends AppCompatActivity {
             switch (event.getAction()) {
                 case DragEvent.ACTION_DRAG_ENTERED:
                     v.setBackgroundResource(R.color.light_yellow);
-                    currentScore++;
                     break;
                 case DragEvent.ACTION_DRAG_EXITED:
                 case DragEvent.ACTION_DRAG_ENDED:
                     v.setBackgroundResource(R.color.light_green);
                     break;
                 case DragEvent.ACTION_DROP:
+                    if (correctBoxId == v.getId()) {
+                        v.setVisibility(View.INVISIBLE);
+                        importedImage.setVisibility(View.VISIBLE);
+                        importedImage.setImageBitmap(bitmap);
+                        importedImage.setX(imageX);
+                        importedImage.setY(imageY);
+
+                        if (boxCount < DROP_BOXES_MAX_SIZE)
+                            correctBoxId = getCorrectBoxId(randomIds[boxCount++]);
+                        currentScore += boxCount * SCORE_MULTIPLIER;
+                        score.setText("Score: " + String.valueOf(currentScore));
+                        break;
+                    }
+
+                    long currentTimeMillisecond = Calendar.getInstance().getTimeInMillis();
+
+                    currentScore += SCORE_MULTIPLIER  - (currentTimeMillisecond - startTimeMillisecond) / SCORE_MULTIPLIER;
+                    score.setText("Score: " + String.valueOf(currentScore));
                     ((ImageView) v).setImageBitmap(bitmap);
-
-                    v.setOnLongClickListener( view -> {
-                        ClipData dragData = ClipData.newPlainText("", "");
-                        View.DragShadowBuilder dragShadowBuilder = new View.DragShadowBuilder(v);
-
-                        view.startDragAndDrop(dragData, dragShadowBuilder,  view, 0);
-
-                        ((ImageView) v).setImageBitmap(null);
-
-                        return true;
-                    });
-
-                    importedImage.setVisibility(View.INVISIBLE);
+                    importedImage.setImageBitmap(null);
                     break;
                 default:
                     break;

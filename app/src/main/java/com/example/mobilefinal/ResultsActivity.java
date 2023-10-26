@@ -5,6 +5,7 @@ import static com.example.mobilefinal.DatabaseHelper.DATABASE_VERSION;
 import static com.example.mobilefinal.LoginActivity.USERNAME_BUNDLE;
 import static com.example.mobilefinal.LoginActivity.USERNAME_STRING;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -22,12 +23,13 @@ import java.util.Objects;
 
 public class ResultsActivity extends AppCompatActivity {
     ListView highscores;
-    Button logout, back;
+    Button logout, playAgain;
     private GameSessionViewAdapter gameSessionViewAdapter;
     ArrayList<GameSession> gameSessionArrayList;
     DatabaseHelper database;
     int scoresCount;
 
+    @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -35,7 +37,6 @@ public class ResultsActivity extends AppCompatActivity {
 
         database = new DatabaseHelper(ResultsActivity.this, DATABASE_NAME, null, DATABASE_VERSION);
         scoresCount = database.getScoresCount();
-        Toast.makeText(this, String.format("%d", scoresCount), Toast.LENGTH_SHORT).show();
         gameSessionArrayList = new ArrayList<GameSession>(scoresCount);
         for (int i = 1; i <= scoresCount; i++) {
             GameSession gs = new GameSession();
@@ -53,8 +54,8 @@ public class ResultsActivity extends AppCompatActivity {
         logout = (Button) findViewById(R.id.btn_logout);
         logout.setOnClickListener(logoutOnClickListener);
 
-        back = (Button) findViewById(R.id.btn_result_back);
-        back.setOnClickListener(backOnClickListener);
+        playAgain = (Button) findViewById(R.id.btn_play_again);
+        playAgain.setOnClickListener(playAgainOnClickListener);
     }
 
     View.OnClickListener logoutOnClickListener = v -> {
@@ -62,7 +63,7 @@ public class ResultsActivity extends AppCompatActivity {
         startActivity(new Intent(ResultsActivity.this, LoginActivity.class));
     };
 
-    View.OnClickListener backOnClickListener = v -> {
+    View.OnClickListener playAgainOnClickListener = v -> {
         Intent intent = new Intent(ResultsActivity.this, MainActivity.class);
         Bundle bundle = new Bundle();
 

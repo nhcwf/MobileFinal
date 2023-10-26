@@ -7,11 +7,9 @@ import static com.example.mobilefinal.LoginActivity.USERNAME_STRING;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
-import android.media.Image;
 import android.os.Bundle;
 import android.text.method.HideReturnsTransformationMethod;
 import android.text.method.PasswordTransformationMethod;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;

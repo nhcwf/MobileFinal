@@ -54,7 +54,7 @@ public class GameSessionViewAdapter extends BaseAdapter {
         }
 
         GameSession gameSession = (GameSession) getItem(position);
-        ((TextView) sessionView.findViewById(R.id.tv_order)).setText(String.format("Attempt#%d - %s", gameSession.getId(), usernameString));
+        ((TextView) sessionView.findViewById(R.id.tv_order)).setText(String.format("#%d - %s%s", gameSession.getId(), usernameString, (gameSession.getId() == getCount()) ? " (last attempt)" : ""));
         ((TextView) sessionView.findViewById(R.id.tv_score)).setText(String.format("Score: %d", gameSession.getScore()));
         ((TextView) sessionView.findViewById(R.id.tv_playtime)).setText(String.format("Duration: %d.%ds", gameSession.getPlaytimeMillisecond() / 1000, gameSession.getPlaytimeMillisecond() % 1000));
 
