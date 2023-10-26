@@ -1,6 +1,6 @@
 package com.example.mobilefinal;
 
-public class GameSession {
+public class GameSession implements Comparable<GameSession> {
     private int id;
     private int score;
     private long playtimeMillisecond;
@@ -27,5 +27,13 @@ public class GameSession {
 
     public void setPlaytime(long playtimeMillisecond) {
         this.playtimeMillisecond = playtimeMillisecond;
+    }
+
+    @Override
+    public int compareTo(GameSession gameSession) {
+        long comparePlaytime = gameSession.getPlaytimeMillisecond();
+
+        // Ascending order
+        return Math.toIntExact(this.playtimeMillisecond - comparePlaytime); // toIntExact() throws an exception if the result overflows an int.
     }
 }

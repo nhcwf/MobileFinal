@@ -9,14 +9,24 @@ import android.widget.TextView;
 import java.util.ArrayList;
 
 public class GameSessionViewAdapter extends BaseAdapter {
-    public final ArrayList<GameSession> gameSessions;
+    public ArrayList<GameSession> gameSessions;
+    private String usernameString;
+
+    public GameSessionViewAdapter(ArrayList<GameSession> gameSessions, String usernameString) {
+        this.gameSessions = gameSessions;
+        this.usernameString = usernameString;
+    }
 
     public GameSessionViewAdapter(ArrayList<GameSession> gameSessions) {
         this.gameSessions = gameSessions;
     }
 
-    public ArrayList<GameSession> getPlaySessions() {
+    public ArrayList<GameSession> getGameSessions() {
         return gameSessions;
+    }
+
+    public void setUsernameString(String usernameString) {
+        this.usernameString = usernameString;
     }
 
     @Override
@@ -44,7 +54,7 @@ public class GameSessionViewAdapter extends BaseAdapter {
         }
 
         GameSession gameSession = (GameSession) getItem(position);
-        ((TextView) sessionView.findViewById(R.id.tv_order)).setText(String.format("#%d", gameSession.getId()));
+        ((TextView) sessionView.findViewById(R.id.tv_order)).setText(String.format("Attempt#%d - %s", gameSession.getId(), usernameString));
         ((TextView) sessionView.findViewById(R.id.tv_score)).setText(String.format("Score: %d", gameSession.getScore()));
         ((TextView) sessionView.findViewById(R.id.tv_playtime)).setText(String.format("Duration: %d.%ds", gameSession.getPlaytimeMillisecond() / 1000, gameSession.getPlaytimeMillisecond() % 1000));
 

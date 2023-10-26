@@ -38,8 +38,7 @@
 
         <activity
             android:name=".ResultsActivity"
-            android:exported="false"
-            android:screenOrientation="fullSensor" />
+            android:exported="false" />
     </application>
 
 </manifest>

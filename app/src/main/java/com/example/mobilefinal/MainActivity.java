@@ -2,6 +2,8 @@ package com.example.mobilefinal;
 
 import static com.example.mobilefinal.DatabaseHelper.DATABASE_NAME;
 import static com.example.mobilefinal.DatabaseHelper.DATABASE_VERSION;
+import static com.example.mobilefinal.LoginActivity.USERNAME_BUNDLE;
+import static com.example.mobilefinal.LoginActivity.USERNAME_STRING;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -48,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
     ConstraintLayout mainLayout;
     Bitmap bitmap;
     TextView username;
+    String usernameString;
 
     @SuppressLint("DefaultLocale")
     @Override
@@ -59,7 +62,8 @@ public class MainActivity extends AppCompatActivity {
         scoreCount = database.getScoresCount();
 
         username = (TextView) findViewById(R.id.tv_username);
-        username.setText(getUsernameString());
+        usernameString = getUsernameString();
+        username.setText(usernameString);
 
         addImage = (Button) findViewById(R.id.btn_add_image);
         addImage.setOnClickListener(addImageOnClickListener);
@@ -106,6 +110,7 @@ public class MainActivity extends AppCompatActivity {
         outState.putBoolean(ADD_IMAGE_BUTTON_FIRST_CLICK, is_add_image_button_first_click);
         outState.putLong(GAME_STARTED_TIME, startTimeMillisecond);
         outState.putInt(CURRENT_SCORE, currentScore);
+        outState.putString(USERNAME_STRING, usernameString);
     }
 
     @SuppressLint("DefaultLocale")
@@ -116,14 +121,15 @@ public class MainActivity extends AppCompatActivity {
         is_add_image_button_first_click = savedInstanceState.getBoolean(ADD_IMAGE_BUTTON_FIRST_CLICK);
         startTimeMillisecond = savedInstanceState.getLong(GAME_STARTED_TIME);
         currentScore = savedInstanceState.getInt(CURRENT_SCORE);
+        usernameString = savedInstanceState.getString(USERNAME_STRING);
     }
 
-    private String getUsernameString() {
+    public String getUsernameString() {
         Intent intent = getIntent();
-        Bundle bundle = intent.getBundleExtra(LoginActivity.USERNAME_BUNDLE);
+        Bundle bundle = intent.getBundleExtra(USERNAME_BUNDLE);
 
         String username = "";
-        if (bundle != null) { username = Objects.requireNonNull(bundle).getString(LoginActivity.USERNAME_STRING); }
+        if (bundle != null) { username = Objects.requireNonNull(bundle).getString(USERNAME_STRING); }
         return username;
     }
 
@@ -173,7 +179,13 @@ public class MainActivity extends AppCompatActivity {
             scoreCount++;
             database.insertGameSession(scoreCount, currentScore, endTimeMillisecond - startTimeMillisecond);
 
-            startActivity(new Intent(MainActivity.this, ResultsActivity.class));
+            Intent intent = new Intent(MainActivity.this, ResultsActivity.class);
+            Bundle bundle = new Bundle();
+
+            bundle.putString(USERNAME_STRING, usernameString);
+            intent.putExtra(USERNAME_BUNDLE, bundle);
+
+            startActivity(intent);
         }
     };
 
