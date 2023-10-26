@@ -33,10 +33,10 @@ public class ResultsActivity extends AppCompatActivity {
         Toast.makeText(this, String.format("%d", highscoresSize), Toast.LENGTH_SHORT).show();
         gameSessionArrayList = new ArrayList<GameSession>(highscoresSize);
         for (int i = 1; i <= highscoresSize; i++) {
-            GameSession ps = new GameSession();
-            database.setGameSession(ps, i);
+            GameSession gs = new GameSession();
+            database.setGameSession(gs, i);
 
-            gameSessionArrayList.add(ps);
+            gameSessionArrayList.add(gs);
         }
 
         highscores = (ListView) findViewById(R.id.lv_highscores_list);

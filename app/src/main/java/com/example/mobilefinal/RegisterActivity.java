@@ -115,7 +115,7 @@ public class RegisterActivity extends AppCompatActivity {
 
             password_is_visible = true;
             passwordVisibility.setImageResource(R.drawable.ic_hint_password);
-            confirmPasswordVisibility.setImageResource(R.drawable.ic_show_password);
+            confirmPasswordVisibility.setImageResource(R.drawable.ic_hint_password);
             password.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
         }
     };

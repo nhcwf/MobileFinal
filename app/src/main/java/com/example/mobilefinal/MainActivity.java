@@ -13,6 +13,7 @@ import android.annotation.SuppressLint;
 import android.content.ClipData;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -58,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
         scoreCount = database.getScoresCount();
 
         username = (TextView) findViewById(R.id.tv_username);
-        username.setText("Username: " + getUsernameString());
+        username.setText(getUsernameString());
 
         addImage = (Button) findViewById(R.id.btn_add_image);
         addImage.setOnClickListener(addImageOnClickListener);
@@ -190,20 +191,16 @@ public class MainActivity extends AppCompatActivity {
     View.OnDragListener removeImageOnDragListener = new View.OnDragListener() {
         @Override
         public boolean onDrag(View v, DragEvent event) {
-//            switch (event.getAction()) {
-//                case DragEvent.ACTION_DRAG_ENTERED:
-//                    v.setBackgroundResource(R.color.orange);
-//                    break;
-//                case DragEvent.ACTION_DRAG_EXITED:
-//                case DragEvent.ACTION_DRAG_ENDED:
-//                    v.setBackgroundResource(R.color.white);
-//                    break;
-//                case DragEvent.ACTION_DROP:
-//                    importedImage.setImageBitmap(null);
-//            }
-
-            if (event.getAction() == DragEvent.ACTION_DROP) {
-                importedImage.setImageBitmap(null);
+            switch (event.getAction()) {
+                case DragEvent.ACTION_DRAG_ENTERED:
+//                    v.setBackgroundResource(R.drawable.rounded_corner_light_green);
+                    break;
+                case DragEvent.ACTION_DRAG_EXITED:
+                case DragEvent.ACTION_DRAG_ENDED:
+//                    v.setBackgroundColor(Color.TRANSPARENT);
+                    break;
+                case DragEvent.ACTION_DROP:
+                    importedImage.setImageBitmap(null);
             }
 
             return true;
