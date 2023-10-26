@@ -44,18 +44,17 @@ public class MainActivity extends AppCompatActivity {
     public static final int SCORE_MULTIPLIER = 100;
     String[] colors = new String[] { "#FF6F00", "#FF8F00", "#FFA000", "#FFB300",
                                      "#FFC107", "#FFCA28", "#FFD54F", "#FFE082", "#FFECB3" };
-    public int scoreCount;
+    public int gameSessionCount;
     public int currentScore = 0;
     boolean image_default_position_is_not_saved = true;
     boolean is_add_image_button_first_click = true;
     boolean weak_player_confirmed = false;
     long startTimeMillisecond, endTimeMillisecond;
     float imageX, imageY;
-    DatabaseHelper database;
     ImageView importedImage, removeImage, surender;
     ArrayList<ImageView> dropBoxes = new ArrayList<>(DROP_BOXES_MAX_SIZE);
     int[] randomIds = new int[DROP_BOXES_MAX_SIZE];
-    int correctBoxId = -1, boxCount = 0;
+    int correctBoxId = -1, boxCount = 0, importedImageCount = 0;
     Button addImage, stop;
     ConstraintLayout mainLayout;
     Bitmap bitmap;
@@ -68,33 +67,46 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        database = new DatabaseHelper(MainActivity.this, DATABASE_NAME, null, DATABASE_VERSION);
-        scoreCount = database.getScoresCount();
+        DatabaseHelper database = new DatabaseHelper(MainActivity.this, DATABASE_NAME, null, DATABASE_VERSION);
+        gameSessionCount = database.getGameSessionCount();
+        database.close();
 
-        score = (TextView) findViewById(R.id.tv_score);
+        assignViews();
+
         score.setText("Score: 0");
 
-        username = (TextView) findViewById(R.id.tv_username);
         usernameString = getUsernameString();
         username.setText(usernameString);
 
-        addImage = (Button) findViewById(R.id.btn_add_image);
         addImage.setOnClickListener(addImageOnClickListener);
 
-        stop = (Button) findViewById(R.id.btn_finish);
         stop.setOnClickListener(stopOnClickListener);
         stop.setVisibility(View.INVISIBLE);
 
-        importedImage = (ImageView) findViewById(R.id.iv_imported_image);
         importedImage.setOnLongClickListener(importedImageOnLongClickListener);
-
-        removeImage = (ImageView) findViewById(R.id.iv_remove_image);
         removeImage.setOnDragListener(removeImageOnDragListener);
-
-
-        mainLayout = (ConstraintLayout) findViewById(R.id.cl_main_layout);
         mainLayout.setOnDragListener(mainLayoutOnDragListener);
 
+        for (ImageView dropbox : dropBoxes) {
+            dropbox.setOnDragListener(dropboxOnDragListener);
+            dropbox.setOnLongClickListener(dropBoxImageOnLongClickListener);
+        }
+
+        generateRandomUniqueArray(randomIds, DROP_BOXES_MAX_SIZE, DROP_BOXES_MAX_SIZE);
+        correctBoxId = getCorrectBoxId(randomIds[boxCount++]);
+
+        surender.setOnClickListener(surenderOnClickListener);
+    }
+
+    //  Assigns views to local view variables using findViewById().
+    private void assignViews() {
+        score = (TextView) findViewById(R.id.tv_score);
+        username = (TextView) findViewById(R.id.tv_username);
+        addImage = (Button) findViewById(R.id.btn_add_image);
+        stop = (Button) findViewById(R.id.btn_finish);
+        importedImage = (ImageView) findViewById(R.id.iv_imported_image);
+        removeImage = (ImageView) findViewById(R.id.iv_remove_image);
+        mainLayout = (ConstraintLayout) findViewById(R.id.cl_main_layout);
         dropBoxes.add((ImageView) findViewById(R.id.iv_dropbox_1));
         dropBoxes.add((ImageView) findViewById(R.id.iv_dropbox_2));
         dropBoxes.add((ImageView) findViewById(R.id.iv_dropbox_3));
@@ -104,18 +116,10 @@ public class MainActivity extends AppCompatActivity {
         dropBoxes.add((ImageView) findViewById(R.id.iv_dropbox_7));
         dropBoxes.add((ImageView) findViewById(R.id.iv_dropbox_8));
         dropBoxes.add((ImageView) findViewById(R.id.iv_dropbox_9));
-        for (ImageView dropbox : dropBoxes) {
-            dropbox.setOnDragListener(dropboxOnDragListener);
-            dropbox.setOnLongClickListener(dropBoxImageOnLongClickListener);
-        }
-
-        generateRandomUniqueArray(randomIds, DROP_BOXES_MAX_SIZE, DROP_BOXES_MAX_SIZE);
-        correctBoxId = getCorrectBoxId(randomIds[boxCount++]);
-
         surender = (ImageView) findViewById(R.id.iv_surender);
-        surender.setOnClickListener(surenderOnClickListener);
     }
 
+    // Assigns to array a random int[] that has unique elements with value ranging from 0 to max_bound.
     private void generateRandomUniqueArray(int[] array, int size, int max_bound) {
         HashSet<Integer> ids = new HashSet<>();
         Random random = new Random();
@@ -131,12 +135,14 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    // Returns the View Id of the "correct" drop box.
     private int getCorrectBoxId(int index) {
         if (index == DROP_BOXES_MAX_SIZE)
             return -1;
         return dropBoxes.get(index).getId();
     }
 
+    // Save the time when the game starts (in millisecond).
     public void runTimer() {
         if (is_add_image_button_first_click) {
             startTimeMillisecond = Calendar.getInstance().getTimeInMillis();
@@ -150,7 +156,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-
         outState.putInt(CURRENT_SCORE, currentScore);
         outState.putInt(BOX_COUNT, boxCount);
         outState.putInt(CORRECT_BOX_ID, correctBoxId);
@@ -174,6 +179,7 @@ public class MainActivity extends AppCompatActivity {
         weak_player_confirmed = savedInstanceState.getBoolean("weak");
     }
 
+    // Returns usernameString. Data is achieved from Intent.BundleExtra().
     public String getUsernameString() {
         Intent intent = getIntent();
         Bundle bundle = intent.getBundleExtra(USERNAME_BUNDLE);
@@ -183,6 +189,7 @@ public class MainActivity extends AppCompatActivity {
         return username;
     }
 
+    // Allows the user to pick only a single image after clicking the View.
     View.OnClickListener addImageOnClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -191,7 +198,9 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    // Handle process that should run when user has picked an image.
     private void handleAfterPickingImage() {
+        importedImageCount++;
         runTimer();
     }
 
@@ -212,6 +221,7 @@ public class MainActivity extends AppCompatActivity {
                 importedImage.setVisibility(View.VISIBLE);
 
                 if (image_default_position_is_not_saved) {
+                    // then save imported image default position
                     imageX = importedImage.getX();
                     imageY = importedImage.getY();
                     image_default_position_is_not_saved = false;
@@ -225,6 +235,7 @@ public class MainActivity extends AppCompatActivity {
         }
     });
 
+    // Show the hint when the user click the surender icon.
     View.OnClickListener surenderOnClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -240,13 +251,17 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    // Performs actions when the game stop: save game session data to the database, then proceed to the Results Screen.
     View.OnClickListener stopOnClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
+            // Save the time when the game stops.
             endTimeMillisecond = Calendar.getInstance().getTimeInMillis();
 
-            scoreCount++;
-            database.insertGameSession(scoreCount, currentScore, endTimeMillisecond - startTimeMillisecond);
+            gameSessionCount++;
+            DatabaseHelper database = new DatabaseHelper(MainActivity.this, DATABASE_NAME, null, DATABASE_VERSION);
+            database.insertGameSession(gameSessionCount, currentScore, endTimeMillisecond - startTimeMillisecond);
+            database.close();
 
             Intent intent = new Intent(MainActivity.this, ResultsActivity.class);
             Bundle bundle = new Bundle();
@@ -280,6 +295,7 @@ public class MainActivity extends AppCompatActivity {
         return true;
     };
 
+    // Remove the image when the user drop it on the View. The View may change background color based on the user drag and drop actions.
     View.OnDragListener removeImageOnDragListener = new View.OnDragListener() {
         @Override
         public boolean onDrag(View v, DragEvent event) {
@@ -293,18 +309,29 @@ public class MainActivity extends AppCompatActivity {
                     break;
                 case DragEvent.ACTION_DROP:
                     importedImage.setImageBitmap(null);
+
+                    // Funny stuff that is so called easter eggs. I guess.
                     if (weak_player_confirmed) {
                         if (boxCount == DROP_BOXES_MAX_SIZE) {
                             currentScore = Integer.MIN_VALUE;
                             usernameString = "Disappointment";
                             username.setText(usernameString);
-                            Toast.makeText(MainActivity.this, "I am proud of you.", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(MainActivity.this, "I am SO proud of such a loser like you.", Toast.LENGTH_SHORT).show();
                         } else if (boxCount == 1) {
-                            currentScore = Integer.MAX_VALUE;
+                            currentScore = Integer.MIN_VALUE;
                             usernameString = "Disappointment Two";
                             username.setText(usernameString);
                             Toast.makeText(MainActivity.this, "Good job, you dumb dumb.", Toast.LENGTH_SHORT).show();
                         }
+                        break;
+                    }
+
+                    // This brace is for honorable beings only.
+                    if (boxCount == DROP_BOXES_MAX_SIZE) {
+                        currentScore = Integer.MAX_VALUE;
+                        usernameString = "The honest";
+                        username.setText(usernameString);
+                        Toast.makeText(MainActivity.this, "You may have spent the rest of your life luck just seconds ago.", Toast.LENGTH_SHORT).show();
                     }
                     break;
                 default:
@@ -321,6 +348,7 @@ public class MainActivity extends AppCompatActivity {
             if (event.getAction() == DragEvent.ACTION_DROP) {
                 importedImage.setImageBitmap(bitmap);
                 importedImage.setVisibility(View.VISIBLE);
+                // Locate the drop location and assign new coordinates to the image
                 importedImage.setX(event.getX() - (float) importedImage.getHeight() / 2);
                 importedImage.setY(event.getY() - (float) importedImage.getHeight() / 2);
             }
@@ -328,6 +356,7 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    // Attaches image on the box when the user drop it on the View. The View may change background color based on the user drag and drop actions.
     View.OnDragListener dropboxOnDragListener = new View.OnDragListener() {
         @Override
         public boolean onDrag(View v, DragEvent event) {
@@ -340,6 +369,7 @@ public class MainActivity extends AppCompatActivity {
                     v.setBackgroundResource(R.color.light_green);
                     break;
                 case DragEvent.ACTION_DROP:
+                    // If this is the correct box,
                     if (correctBoxId == v.getId()) {
                         v.setVisibility(View.INVISIBLE);
                         importedImage.setVisibility(View.VISIBLE);
@@ -349,7 +379,7 @@ public class MainActivity extends AppCompatActivity {
 
                         if (boxCount < DROP_BOXES_MAX_SIZE)
                             correctBoxId = getCorrectBoxId(randomIds[boxCount++]);
-                        currentScore += boxCount * SCORE_MULTIPLIER;
+                        currentScore += (boxCount + importedImageCount) * SCORE_MULTIPLIER;
                         score.setText("Score: " + String.valueOf(currentScore));
                         break;
                     }

@@ -11,7 +11,6 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -36,7 +35,7 @@ public class ResultsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_results);
 
         database = new DatabaseHelper(ResultsActivity.this, DATABASE_NAME, null, DATABASE_VERSION);
-        scoresCount = database.getScoresCount();
+        scoresCount = database.getGameSessionCount();
         gameSessionArrayList = new ArrayList<GameSession>(scoresCount);
         for (int i = 1; i <= scoresCount; i++) {
             GameSession gs = new GameSession();
@@ -73,6 +72,7 @@ public class ResultsActivity extends AppCompatActivity {
         startActivity(intent);
     };
 
+    // Returns the username string. The data is achieved using Intent.BundleExtra.
     public String getUsernameString() {
         Intent intent = getIntent();
         Bundle bundle = intent.getBundleExtra(USERNAME_BUNDLE);
@@ -82,6 +82,7 @@ public class ResultsActivity extends AppCompatActivity {
         return username;
     }
 
+    // Sorts game sessions based on scores, then time plays, and lastly the id.
     private void sort(ArrayList<GameSession> gameSessions) {
         Collections.sort(gameSessions, Comparator.comparingInt(GameSession::getScore).reversed()
                 .thenComparingLong(GameSession::getPlaytimeMillisecond)

@@ -37,12 +37,21 @@ public class LoginActivity extends AppCompatActivity {
 
         database = new DatabaseHelper(LoginActivity.this, DATABASE_NAME, null, DATABASE_VERSION);
 
+        assignViews();
+        assignListeners();
+    }
+
+    // Assigns views to local view variables using findViewById().
+    private void assignViews() {
         username = (EditText) findViewById(R.id.et_email);
         password = (EditText) findViewById(R.id.et_password);
         passwordVisibility = (ImageView) findViewById(R.id.iv_password_visibility);
         login = (Button) findViewById(R.id.btn_login);
         signup = (Button) findViewById(R.id.btn_sign_in);
+    }
 
+    // Assigns view listeners to specific individual views.
+    private void assignListeners() {
         login.setOnClickListener(loginOnClickListener);
         signup.setOnClickListener(signinOnClickListener);
         passwordVisibility.setOnClickListener(passwordVisibilityOnClickListener);

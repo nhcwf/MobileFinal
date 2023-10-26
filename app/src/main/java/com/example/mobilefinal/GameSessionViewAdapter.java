@@ -44,6 +44,7 @@ public class GameSessionViewAdapter extends BaseAdapter {
         return gameSessions.get(position).getId();
     }
 
+    // Returns a view containing a game session data (id, score, playtime) that is passed in with an index.
     @SuppressLint("DefaultLocale")
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {

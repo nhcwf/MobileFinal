@@ -36,6 +36,12 @@ public class RegisterActivity extends AppCompatActivity {
 
         database = new DatabaseHelper(this, DATABASE_NAME, null, DATABASE_VERSION);
 
+        assignViews();
+        assignListeners();
+    }
+
+    // Assigns views to local view variables using findViewById().
+    private void assignViews() {
         username = (EditText) findViewById(R.id.et_register_email);
         password = (EditText) findViewById(R.id.et_register_password);
         confirmPassword = (EditText) findViewById(R.id.et_register_confirm_password);
@@ -43,7 +49,10 @@ public class RegisterActivity extends AppCompatActivity {
         confirmPasswordVisibility = (ImageView) findViewById(R.id.iv_register_confirm_password_visibility);
         registerButton = (Button) findViewById(R.id.btn_register);
         returnButton = (Button) findViewById(R.id.btn_return);
+    }
 
+    // Assigns view listeners to specific individual views.
+    private void assignListeners() {
         registerButton.setOnClickListener(registerOnClickListener);
         returnButton.setOnClickListener(returnOnClickListener);
         passwordVisibility.setOnClickListener(passwordVisibilityOnClickListener);
@@ -66,6 +75,7 @@ public class RegisterActivity extends AppCompatActivity {
         confirmPassword.setText(savedInstanceState.getString(CONFIRM_PASSWORD_STRING));
     }
 
+    // Saves entered login data into the the database.
     View.OnClickListener registerOnClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -100,6 +110,7 @@ public class RegisterActivity extends AppCompatActivity {
 
     View.OnClickListener returnOnClickListener = v -> finish();
 
+    // Hides and Unhinges password text fields on user specific actions.
     View.OnClickListener passwordVisibilityOnClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {

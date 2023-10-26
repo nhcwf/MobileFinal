@@ -21,6 +21,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String USERS_TABLE_NAME = "USERS";
     public static final String HIGHSCORES_TABLE_NAME = "HIGHSCORES";
 
+    // Constructor
     public DatabaseHelper(@Nullable Context context, @Nullable String name, @Nullable SQLiteDatabase.CursorFactory factory, int version) {
         super(context, name, factory, version);
     }
@@ -63,17 +64,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         ContentValues contentValues = new ContentValues();
 
         contentValues.put("username", username);
+
+        // Put encode password using SHA-256 into the data set
         try {
             contentValues.put("password", toHexString(getSHA(password)));
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
 
+        // Insert a row into the database
         long result = database.insert(USERS_TABLE_NAME, null, contentValues);
 
         return result != -1;
     }
 
+    // Returns true if username does not exist in the database, false otherwise.
     public boolean usernameNotFound(String username) {
         SQLiteDatabase database = this.getReadableDatabase();
         Cursor cursor = database.rawQuery("SELECT * FROM " + USERS_TABLE_NAME + " WHERE USERNAME = ?", new String[] { username });
@@ -81,10 +86,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return cursor.getCount() == 0;
     }
 
+    // Returns true if the username and password are matching with ones in the database.
     public boolean isValidLogin(String username, String password) {
         SQLiteDatabase database = this.getReadableDatabase();
         String hashPassword = "";
 
+        // Hashing the password to get the password hash for comparing
         try {
             hashPassword = toHexString(getSHA(password));
         } catch (NoSuchAlgorithmException e) {
@@ -96,6 +103,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return cursor.getCount() != 0;
     }
 
+    // Insert a game session into database. Returns true if succeeded, false otherwise.
     public boolean insertGameSession(int id, int score, long playtimeMilliseconds) {
         SQLiteDatabase database = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
@@ -109,13 +117,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return result != -1;
     }
 
-    public int getScoresCount() {
+    // Returns the number of game session in the database.
+    public int getGameSessionCount() {
         SQLiteDatabase database = this.getReadableDatabase();
         @SuppressLint("Recycle") Cursor cursor = database.rawQuery(String.format("SELECT * FROM %s", HIGHSCORES_TABLE_NAME), null);
 
         return cursor.getCount();
     }
 
+    // Assigns a game session with id to the parameter gameSession.
     @SuppressLint("Range")
     public void setGameSession(GameSession gameSession, int id) {
         SQLiteDatabase database = this.getReadableDatabase();
