@@ -1,3 +1,11 @@
+/**
+ * The HelloWorld program implements an application that
+ * simply displays "Hello World!" to the standard output.
+ *
+ * @author  NHC
+ * @version 1.2
+ * @since   2023-10-26
+ */
 package com.example.mobilefinal;
 
 import android.annotation.SuppressLint;
