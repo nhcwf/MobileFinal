@@ -59,6 +59,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return hexString.toString();
     }
 
+    // Returns true if insert successfully, false otherwise.
     public boolean insertUser(String username, String password) {
         SQLiteDatabase database = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();

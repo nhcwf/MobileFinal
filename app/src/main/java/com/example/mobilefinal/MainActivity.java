@@ -41,9 +41,9 @@ public class MainActivity extends AppCompatActivity {
     public static final String BOX_COUNT = "boxCount";
     public static final String RANDOM_IDS = "randomIds";
     public static final String CORRECT_BOX_ID = "correctBoxId";
-    public static final int SCORE_MULTIPLIER = 100;
-    String[] colors = new String[] { "#FF6F00", "#FF8F00", "#FFA000", "#FFB300",
-                                     "#FFC107", "#FFCA28", "#FFD54F", "#FFE082", "#FFECB3" };
+    // The score will start to get punished when the total seconds, which is how long the game has been played, is larger than the time threshold.
+    public int gameTimeThresholdLimitValue = 10;
+    public int scoreMultiplier = 10 * gameTimeThresholdLimitValue; // The lower the multiplier, the harder it gets.
     public int gameSessionCount;
     public int currentScore = 0;
     boolean image_default_position_is_not_saved = true;
@@ -240,14 +240,14 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onClick(View v) {
             weak_player_confirmed = true;
-            currentScore -= randomIds[0] * SCORE_MULTIPLIER;
-            score.setText("Score: " + String.valueOf(currentScore));
+            currentScore -= randomIds[0] * scoreMultiplier;
+            score.setText(String.format("Score: %s", currentScore));
             TextView hint = (TextView) findViewById(R.id.tv_hint);
-            String hintString = "";
+            StringBuilder hintString = new StringBuilder();
 
-            for (int i = 0; i < DROP_BOXES_MAX_SIZE; i++) { hintString += randomIds[i] + " "; }
+            for (int i = 0; i < DROP_BOXES_MAX_SIZE; i++) { hintString.append(randomIds[i]).append(" "); }
 
-            hint.setText(hintString);
+            hint.setText(hintString.toString());
         }
     };
 
@@ -323,6 +323,7 @@ public class MainActivity extends AppCompatActivity {
                             username.setText(usernameString);
                             Toast.makeText(MainActivity.this, "Good job, you dumb dumb.", Toast.LENGTH_SHORT).show();
                         }
+                        score.setText(String.format("Score: %s", currentScore));
                         break;
                     }
 
@@ -333,6 +334,7 @@ public class MainActivity extends AppCompatActivity {
                         username.setText(usernameString);
                         Toast.makeText(MainActivity.this, "You may have spent the rest of your life luck just seconds ago.", Toast.LENGTH_SHORT).show();
                     }
+                    score.setText(String.format("Score: %s", currentScore));
                     break;
                 default:
                     break;
@@ -358,8 +360,11 @@ public class MainActivity extends AppCompatActivity {
 
     // Attaches image on the box when the user drop it on the View. The View may change background color based on the user drag and drop actions.
     View.OnDragListener dropboxOnDragListener = new View.OnDragListener() {
+        @SuppressLint("SetTextI18n")
         @Override
         public boolean onDrag(View v, DragEvent event) {
+            long currentTimeMillisecond = Calendar.getInstance().getTimeInMillis();
+
             switch (event.getAction()) {
                 case DragEvent.ACTION_DRAG_ENTERED:
                     v.setBackgroundResource(R.color.light_yellow);
@@ -379,15 +384,15 @@ public class MainActivity extends AppCompatActivity {
 
                         if (boxCount < DROP_BOXES_MAX_SIZE)
                             correctBoxId = getCorrectBoxId(randomIds[boxCount++]);
-                        currentScore += (boxCount + importedImageCount) * SCORE_MULTIPLIER;
-                        score.setText("Score: " + String.valueOf(currentScore));
+                        currentScore += (boxCount + importedImageCount) * scoreMultiplier;
+                        score.setText("Score: " + currentScore);
                         break;
                     }
-
-                    long currentTimeMillisecond = Calendar.getInstance().getTimeInMillis();
-
-                    currentScore += SCORE_MULTIPLIER  - (currentTimeMillisecond - startTimeMillisecond) / SCORE_MULTIPLIER;
-                    score.setText("Score: " + String.valueOf(currentScore));
+                    // x<10 -> f(x)>0; x>=10 -> f(x) <0
+                    // (10 - x) * Multiplier
+                    // 100 - x/100 & -(x*100)
+                    currentScore += scoreMultiplier - (currentTimeMillisecond - startTimeMillisecond) / scoreMultiplier;
+                    score.setText("Score: " + currentScore);
                     ((ImageView) v).setImageBitmap(bitmap);
                     importedImage.setImageBitmap(null);
                     break;
